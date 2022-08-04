@@ -43,10 +43,11 @@ func main() {
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
 	router.HandleFunc("/tasks-completed", GetCompletedTasks).Methods("GET")
 	router.HandleFunc("/tasks-incomplete", GetIncompleteTasks).Methods("GET")
-
 	// POST
 	router.HandleFunc("/createtask", APIHealth).Methods("POST")
 	router.HandleFunc("/task/{id}", UpdateTask).Methods("POST")
+	// DELETE Routes
+	router.HandleFunc("/task/{id}", DeleteTask).Methods("DELETE")
 
 	http.ListenAndServe(":8000", router)
 }
@@ -125,5 +126,26 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 		db.Save(&task)
 		w.Header().Set("Content-Type", "application/json")
 		io.WriteString(w, `{"updated": true}`)
+	}
+}
+
+// Delete (POST)
+func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	// Setup
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+	err := GetTaskById(id)
+	if err == false {
+		// Task does not exist
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"updated": false, "error": "Task does not exist"}`)
+	} else {
+		// If Task exists, Delete Task
+		log.WithFields(log.Fields{"Id": id}).Info("Deleting Task")
+		task := &TaskStruct{}
+		db.First(&task, id)
+		db.Delete(&task)
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"deleted": true}`)
 	}
 }
