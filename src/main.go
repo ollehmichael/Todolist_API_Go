@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,7 +50,12 @@ func main() {
 	// DELETE Routes
 	router.HandleFunc("/task/{id}", DeleteTask).Methods("DELETE")
 
-	http.ListenAndServe(":8000", router)
+	// Wrap CORS handler around app
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
+	}).Handler(router)
+
+	http.ListenAndServe(":8000", handler)
 }
 
 // return {"alive":true}
