@@ -13,6 +13,13 @@ import (
 // db setup
 var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
 
+// Task Struct
+type TaskStruct struct {
+	Id          int `gorm: "primary_key,omitempty"`
+	Description string
+	Completed   bool
+}
+
 // init with logrus
 func init() {
 	log.SetFormatter(&log.TextFormatter{})
