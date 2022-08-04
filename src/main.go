@@ -40,7 +40,7 @@ func main() {
 	router := mux.NewRouter()
 	// GET
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
-	router.HandleFunc("/getalltasks", APIHealth).Methods("GET")
+
 	// POST
 	router.HandleFunc("/createtask", APIHealth).Methods("POST")
 
@@ -71,4 +71,16 @@ func GetTasks(completed bool) interface{} {
 	var tasks []TaskStruct
 	TasksbyId := db.Where("completed = ?", completed).Find(&tasks).Value
 	return TasksbyId
+}
+
+// Read (GET) - Unique Tasks
+func GetTaskById(Id int) bool {
+	task := &TaskStruct{}
+	result := db.First(&task, Id)
+	if result.Error != nil {
+		log.Warn("Task does not exist")
+		return false
+	}
+
+	return true
 }
