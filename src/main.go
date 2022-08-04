@@ -30,6 +30,9 @@ func init() {
 func main() {
 	defer db.Close()
 
+	db.Debug().DropTableIfExists(&TaskStruct{})
+	db.Debug().AutoMigrate(&TaskStruct{})
+
 	log.Info("** Starting API server **")
 	router := mux.NewRouter()
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
