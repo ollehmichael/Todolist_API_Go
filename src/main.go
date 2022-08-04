@@ -40,6 +40,7 @@ func main() {
 	router := mux.NewRouter()
 	// GET
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
+	router.HandleFunc("/getalltasks", APIHealth).Methods("GET")
 	// POST
 	router.HandleFunc("/createtask", APIHealth).Methods("POST")
 
@@ -63,4 +64,11 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	result := db.Last(&task)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result.Value)
+}
+
+// Read (GET) - All Tasks
+func GetTasks(completed bool) interface{} {
+	var tasks []TaskStruct
+	TasksbyId := db.Where("completed = ?", completed).Find(&tasks).Value
+	return TasksbyId
 }
