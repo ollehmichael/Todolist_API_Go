@@ -40,6 +40,8 @@ func main() {
 	router := mux.NewRouter()
 	// GET
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
+	router.HandleFunc("/tasks-completed", GetCompletedTasks).Methods("GET")
+	router.HandleFunc("/tasks-incomplete", GetIncompleteTasks).Methods("GET")
 
 	// POST
 	router.HandleFunc("/createtask", APIHealth).Methods("POST")
@@ -83,4 +85,20 @@ func GetTaskById(Id int) bool {
 	}
 
 	return true
+}
+
+// Read (GET) - Completed Tasks
+func GetCompletedTasks(w http.ResponseWriter, r *http.Request) {
+	log.Info("Get Completed Tasks")
+	completedTasks := GetTasks(true)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(completedTasks)
+}
+
+// Read (GET) - Incomplete Tasks
+func GetIncompleteTasks(w http.ResponseWriter, r *http.Request) {
+	log.Info("Get Incomplete Tasks")
+	incompleteTasks := GetTasks(false)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(incompleteTasks)
 }
