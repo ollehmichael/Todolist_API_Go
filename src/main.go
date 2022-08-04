@@ -5,8 +5,13 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	log "github.com/sirupsen/logrus"
 )
+
+// db setup
+var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
 
 // init with logrus
 func init() {
@@ -16,6 +21,8 @@ func init() {
 
 // main - mux init + router setup
 func main() {
+	defer db.Close()
+
 	log.Info("** Starting API server **")
 	router := mux.NewRouter()
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
