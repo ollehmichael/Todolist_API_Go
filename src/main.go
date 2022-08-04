@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -45,6 +46,7 @@ func main() {
 
 	// POST
 	router.HandleFunc("/createtask", APIHealth).Methods("POST")
+	router.HandleFunc("/task/{id}", UpdateTask).Methods("POST")
 
 	http.ListenAndServe(":8000", router)
 }
@@ -101,4 +103,27 @@ func GetIncompleteTasks(w http.ResponseWriter, r *http.Request) {
 	incompleteTasks := GetTasks(false)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(incompleteTasks)
+}
+
+// Update (POST)
+func UpdateTask(w http.ResponseWriter, r *http.Request) {
+	// Setup
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+	err := GetTaskById(id)
+	if err == false {
+		// Task does not exist
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"updated": false, "error": "Task does not exist"}`)
+	} else {
+		// If Task exists, Update Task Status to Completed
+		completed, _ := strconv.ParseBool(r.FormValue("completed"))
+		log.WithFields(log.Fields{"Id": id, "Completed": completed}).Info("Updating Task")
+		task := &TaskStruct{}
+		db.First(&task, id)
+		task.Completed = completed
+		db.Save(&task)
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, `{"updated": true}`)
+	}
 }
