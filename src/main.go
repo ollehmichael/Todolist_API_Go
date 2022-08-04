@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -34,8 +35,14 @@ func main() {
 	db.Debug().AutoMigrate(&TaskStruct{})
 
 	log.Info("** Starting API server **")
+
+	// init router
 	router := mux.NewRouter()
+	// GET
 	router.HandleFunc("/apihealth", APIHealth).Methods("GET")
+	// POST
+	router.HandleFunc("/createtask", APIHealth).Methods("POST")
+
 	http.ListenAndServe(":8000", router)
 }
 
@@ -44,4 +51,16 @@ func APIHealth(w http.ResponseWriter, r *http.Request) {
 	log.Info("API Health : Success")
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, `{"alive": true}`)
+}
+
+// CRUD Functions
+// Create (POST)
+func CreateTask(w http.ResponseWriter, r *http.Request) {
+	description := r.FormValue("Description")
+	log.WithFields(log.Fields{"Description": description}).Info("Add new Task. Saving to db.")
+	task := &TaskStruct{Description: description, Completed: false}
+	db.Create(&task)
+	result := db.Last(&task)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result.Value)
 }
